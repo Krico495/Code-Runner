@@ -1,14 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Code Runner – Nauka Programowania</title>
+  <title>Code Runner ULTIMATE</title>
   <style>
-    /* ============================================================
-       CSS – INTERFEJS UŻYTKOWNIKA (sekcja 1 z 8)
-       Odpowiada za: wygląd HUD, ekranów, przycisków, liczników
-    ============================================================ */
     @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@400;700;900&display=swap');
 
     :root {
@@ -20,6 +17,8 @@
       --cyan:      #58a6ff;
       --red:       #f85149;
       --yellow:    #e3b341;
+      --purple:    #bc8cff;
+      --orange:    #ff7b35;
       --text:      #c9d1d9;
       --text-dim:  #6e7681;
       --mono:      'Share Tech Mono', monospace;
@@ -41,64 +40,65 @@
       user-select: none;
     }
 
-    /* ---------- HUD (Heads-Up Display) ---------- */
     #hud {
       width: 800px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 8px 12px;
+      padding: 6px 12px;
       background: var(--panel);
       border: 1px solid var(--border);
       border-bottom: none;
       border-radius: 6px 6px 0 0;
-      font-size: 13px;
-      gap: 16px;
+      font-size: 12px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .hud-group {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
     }
 
     .hud-label {
       color: var(--text-dim);
-      font-size: 11px;
+      font-size: 10px;
       text-transform: uppercase;
       letter-spacing: .08em;
     }
 
     .hud-value {
       color: var(--green);
-      font-size: 18px;
+      font-size: 16px;
       font-weight: bold;
       font-family: var(--sans);
-      min-width: 36px;
+      min-width: 32px;
       text-align: right;
-    }
-
-    #lives-display span {
-      font-size: 16px;
-      margin-left: 2px;
     }
 
     #level-badge {
       background: var(--green-dim);
       color: var(--green);
-      padding: 2px 10px;
+      padding: 2px 8px;
       border-radius: 12px;
-      font-size: 12px;
+      font-size: 11px;
       letter-spacing: .06em;
     }
 
-    #combo-display {
-      color: var(--yellow);
-      font-size: 13px;
-      transition: opacity .3s;
+    #map-badge {
+      background: #1a2a4a;
+      color: var(--cyan);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
     }
 
-    /* ---------- Canvas (scena gry) ---------- */
+    #combo-display { color: var(--yellow); font-size: 12px; transition: opacity .3s; }
+
+    #ammo-display { color: var(--orange); font-size: 12px; }
+    #shield-display { color: var(--purple); font-size: 12px; }
+
     #gameCanvas {
       display: block;
       border: 1px solid var(--border);
@@ -106,13 +106,12 @@
       image-rendering: pixelated;
     }
 
-    /* ---------- Pasek dolny ---------- */
     #bottomBar {
       width: 800px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 6px 12px;
+      padding: 5px 12px;
       background: var(--panel);
       border: 1px solid var(--border);
       border-top: none;
@@ -124,7 +123,6 @@
     #hint-text { color: var(--cyan); }
     #fps-counter { color: var(--text-dim); }
 
-    /* ---------- Ekrany nakładkowe ---------- */
     .overlay {
       position: fixed;
       inset: 0;
@@ -143,62 +141,65 @@
       border: 1px solid var(--border);
       border-top: 3px solid var(--green);
       border-radius: 8px;
-      padding: 40px 48px;
+      padding: 32px 40px;
       text-align: center;
-      max-width: 480px;
-      width: 90%;
+      max-width: 520px;
+      width: 92%;
     }
 
     .card h1 {
       font-family: var(--sans);
       font-weight: 900;
-      font-size: 32px;
+      font-size: 30px;
       color: var(--green);
       letter-spacing: -.01em;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
-    .card .subtitle {
-      color: var(--text-dim);
-      font-size: 13px;
-      margin-bottom: 24px;
-    }
-
-    .card p {
-      font-size: 13px;
-      line-height: 1.8;
-      color: var(--text);
-      margin-bottom: 20px;
-    }
+    .card .subtitle { color: var(--text-dim); font-size: 12px; margin-bottom: 18px; }
+    .card p { font-size: 12px; line-height: 1.8; color: var(--text); margin-bottom: 16px; }
 
     .card .token-legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-      margin-bottom: 24px;
+      display: flex; flex-wrap: wrap; gap: 6px;
+      justify-content: center; margin-bottom: 18px;
     }
 
     .token-pill {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-family: var(--mono);
-      border: 1px solid;
+      padding: 3px 10px; border-radius: 20px; font-size: 11px;
+      font-family: var(--mono); border: 1px solid;
     }
     .token-pill.var  { color: var(--cyan);   border-color: var(--cyan);   background: rgba(88,166,255,.08); }
     .token-pill.fn   { color: var(--green);  border-color: var(--green);  background: rgba(57,211,83,.08); }
     .token-pill.loop { color: var(--yellow); border-color: var(--yellow); background: rgba(227,179,65,.08); }
     .token-pill.bug  { color: var(--red);    border-color: var(--red);    background: rgba(248,81,73,.08); }
+    .token-pill.power { color: var(--purple); border-color: var(--purple); background: rgba(188,140,255,.08); }
+
+    .map-select {
+      display: flex; gap: 10px; justify-content: center; margin-bottom: 18px;
+    }
+
+    .map-btn {
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 12px;
+      background: transparent;
+      color: var(--text);
+      transition: all .15s;
+    }
+    .map-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+    .map-btn.active { border-color: var(--green); color: var(--green); background: rgba(57,211,83,.1); }
 
     .btn {
       display: inline-block;
-      padding: 12px 32px;
+      padding: 10px 28px;
       background: var(--green);
       color: #0d1117;
       font-family: var(--sans);
       font-weight: 700;
-      font-size: 15px;
+      font-size: 14px;
       border: none;
       border-radius: 4px;
       cursor: pointer;
@@ -209,965 +210,1201 @@
     .btn:active { transform: translateY(0); filter: brightness(.95); }
 
     .btn-secondary {
-      background: transparent;
-      color: var(--text);
-      border: 1px solid var(--border);
-      margin-left: 10px;
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border); margin-left: 10px;
     }
     .btn-secondary:hover { border-color: var(--text); filter: none; }
 
-    #finalScore { font-size: 48px; color: var(--green); font-family: var(--sans); font-weight: 900; }
-    #finalMessage { color: var(--text-dim); font-size: 13px; margin-bottom: 20px; }
-    #highScoreNote { color: var(--yellow); font-size: 12px; margin-bottom: 20px; }
+    #finalScore { font-size: 44px; color: var(--green); font-family: var(--sans); font-weight: 900; }
+    #finalMessage { color: var(--text-dim); font-size: 12px; margin-bottom: 16px; }
+    #highScoreNote { color: var(--yellow); font-size: 11px; margin-bottom: 16px; }
 
-    /* ---------- Powiadomienia / "toast" ---------- */
     #toastContainer {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 200;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      pointer-events: none;
+      position: fixed; top: 20px; right: 20px; z-index: 200;
+      display: flex; flex-direction: column; gap: 8px; pointer-events: none;
     }
 
     .toast {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--green);
-      padding: 8px 16px;
-      border-radius: 4px;
-      font-size: 13px;
+      background: var(--panel); border: 1px solid var(--border);
+      border-left: 3px solid var(--green); padding: 7px 14px;
+      border-radius: 4px; font-size: 12px;
       animation: toastIn .25s ease, toastOut .3s ease 1.7s forwards;
       color: var(--green);
     }
-
     .toast.warn { border-left-color: var(--yellow); color: var(--yellow); }
     .toast.err  { border-left-color: var(--red);    color: var(--red); }
+    .toast.purple { border-left-color: var(--purple); color: var(--purple); }
 
     @keyframes toastIn  { from { opacity:0; transform:translateX(20px) } to { opacity:1; transform:none } }
     @keyframes toastOut { to   { opacity:0; transform:translateX(20px) } }
 
-    /* ---------- Klawiszowa ściągawka ---------- */
-    #controls-hint {
-      display: flex;
-      gap: 16px;
-      font-size: 11px;
-      color: var(--text-dim);
-    }
-
+    #controls-hint { display: flex; gap: 12px; font-size: 10px; color: var(--text-dim); flex-wrap: wrap; }
     .key {
-      display: inline-block;
-      padding: 1px 6px;
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      color: var(--text);
-      font-size: 10px;
+      display: inline-block; padding: 1px 5px; border: 1px solid var(--border);
+      border-radius: 3px; color: var(--text); font-size: 9px;
     }
   </style>
 </head>
 <body>
 
-  <!-- ============================================================
-       HTML – INTERFEJS UŻYTKOWNIKA
-       HUD, scena i dolny pasek są zbudowane z poniższych elementów
-  ============================================================ -->
-
-  <!-- HUD: liczniki, życia, poziom -->
   <div id="hud">
     <div class="hud-group">
       <span class="hud-label">Wynik</span>
       <span class="hud-value" id="scoreDisplay">0</span>
     </div>
     <div class="hud-group">
-      <span class="hud-label">Najlepszy</span>
+      <span class="hud-label">Rekord</span>
       <span class="hud-value" id="highScoreDisplay">0</span>
     </div>
     <span id="level-badge">POZIOM 1</span>
+    <span id="map-badge">🌌 SPACE</span>
     <div class="hud-group" id="lives-display">
       <span class="hud-label">Życia</span>
       <span id="livesIcons">❤️❤️❤️</span>
     </div>
     <div id="combo-display">COMBO x1</div>
+    <div id="ammo-display">🔫 ∞</div>
+    <div id="shield-display" style="opacity:.3">🛡️ 0s</div>
   </div>
 
-  <!-- Scena gry – canvas -->
   <canvas id="gameCanvas" width="800" height="450"></canvas>
 
-  <!-- Dolny pasek ze wskazówką i FPS -->
   <div id="bottomBar">
     <div id="controls-hint">
       <span><span class="key">←</span><span class="key">→</span> ruch</span>
-      <span><span class="key">↑</span> / <span class="key">Space</span> skok</span>
+      <span><span class="key">↑</span>/<span class="key">Space</span> skok</span>
+      <span><span class="key">X</span>/<span class="key">Z</span> strzał</span>
       <span><span class="key">P</span> pauza</span>
     </div>
-    <span id="hint-text">Zbieraj tokeny i unikaj bugów!</span>
+    <span id="hint-text">Zbieraj tokeny, strzelaj do bugów!</span>
     <span id="fps-counter">60 FPS</span>
   </div>
 
-  <!-- Ekran startowy -->
+  <!-- Start screen -->
   <div class="overlay" id="startScreen">
     <div class="card">
-      <h1>&lt;Code Runner/&gt;</h1>
-      <p class="subtitle">Gra platformowa do nauki programowania</p>
-      <p>Steruj robotem-programistą. Zbieraj tokeny kodu,<br>
-         unikaj bugów i awansuj na kolejne poziomy!</p>
+      <h1>&lt;Code Runner ULTIMATE/&gt;</h1>
+      <p class="subtitle">Platforma • Strzelanie • Power-upy • 3 mapy</p>
+      <p>Steruj robotem. Zbieraj tokeny, <strong style="color:var(--orange)">strzelaj do bugów</strong>,<br>
+         zbieraj power-upy i przeżyj jak najdłużej!</p>
       <div class="token-legend">
         <span class="token-pill var">var x = 5</span>
         <span class="token-pill fn">function()</span>
         <span class="token-pill loop">for loop</span>
         <span class="token-pill bug">🐛 Bug</span>
+        <span class="token-pill power">⚡ Power-up</span>
+      </div>
+      <p style="font-size:11px;color:var(--text-dim);margin-bottom:12px">Wybierz mapę:</p>
+      <div class="map-select">
+        <button class="map-btn active" data-map="space">🌌 Space</button>
+        <button class="map-btn" data-map="matrix">💚 Matrix</button>
+        <button class="map-btn" data-map="city">🏙️ City</button>
       </div>
       <button class="btn" id="startBtn">▶ Rozpocznij grę</button>
     </div>
   </div>
 
-  <!-- Ekran końcowy -->
+  <!-- End screen -->
   <div class="overlay hidden" id="endScreen">
     <div class="card">
       <h1>GAME OVER</h1>
       <div id="finalScore">0</div>
-      <div id="finalMessage">Zebrałeś 0 tokenów</div>
+      <div id="finalMessage"></div>
       <div id="highScoreNote"></div>
       <button class="btn" id="restartBtn">↺ Zagraj ponownie</button>
       <button class="btn btn-secondary" id="menuBtn">Menu</button>
     </div>
   </div>
 
-  <!-- Ekran pauzy -->
+  <!-- Pause screen -->
   <div class="overlay hidden" id="pauseScreen">
     <div class="card">
       <h1>PAUZA</h1>
-      <p style="margin-bottom:24px">Gra zatrzymana.<br>Naciśnij <strong>P</strong> lub kliknij przycisk, aby wznowić.</p>
+      <p style="margin-bottom:20px">Gra zatrzymana.<br>Naciśnij <strong>P</strong> lub kliknij, aby wznowić.</p>
       <button class="btn" id="resumeBtn">▶ Wznów</button>
     </div>
   </div>
 
-  <!-- Kontener powiadomień -->
+  <!-- Level up screen -->
+  <div class="overlay hidden" id="levelScreen">
+    <div class="card" style="border-top-color:var(--yellow)">
+      <h1 style="color:var(--yellow)">⚡ LEVEL UP!</h1>
+      <div id="levelUpMsg" style="font-size:18px;color:var(--green);margin:12px 0;font-family:var(--sans);font-weight:900"></div>
+      <p id="levelUpDesc" style="color:var(--text-dim);font-size:12px;margin-bottom:20px"></p>
+      <button class="btn" style="background:var(--yellow)" id="continueBtn">→ Dalej</button>
+    </div>
+  </div>
+
   <div id="toastContainer"></div>
 
   <script>
-  /* ============================================================
-     JAVASCRIPT – PEŁNA LOGIKA GRY
-     Podzielony na sekcje odpowiadające 8 wymaganiom zadania
-  ============================================================ */
-
   // ============================================================
-  // SEKCJA A – KONFIGURACJA I STAŁE
+  // KONFIGURACJA
   // ============================================================
-
-  /** CONFIG – centralna konfiguracja gry.
-   *  Gromadzi wszystkie "magiczne liczby" w jednym miejscu,
-   *  co ułatwia balansowanie i modyfikację mechaniki.
-   */
   const CONFIG = {
-    GRAVITY:         0.55,   // przyspieszenie grawitacyjne (px/klatka²)
-    JUMP_FORCE:     -13,     // siła skoku (wartość ujemna = góra)
-    MOVE_SPEED:      4.5,    // prędkość pozioma gracza
-    FRICTION:        0.82,   // tłumienie prędkości (0–1, mniej = bardziej poślizg)
-    LIVES:           3,      // startowa liczba żyć
-    INVINCIBLE_MS:   1800,   // czas nietykalności po kolizji z bugiem (ms)
-    COMBO_RESET_MS:  2500,   // czas na zebranie kolejnego tokenu przed resetem combo
-    TOKEN_TYPES: [           // definicje typów tokenów do zebrania
+    GRAVITY:        0.55,
+    JUMP_FORCE:    -13,
+    MOVE_SPEED:     4.5,
+    FRICTION:       0.82,
+    LIVES:          3,
+    INVINCIBLE_MS:  1800,
+    COMBO_RESET_MS: 2500,
+    BULLET_SPEED:   9,
+    BULLET_COOLDOWN:300,  // ms między strzałami
+    BULLET_AMMO_MAX:20,   // amunicja (Infinity = brak limitu)
+
+    TOKEN_TYPES: [
       { label: 'var x = 5',    color: '#58a6ff', points: 10, css: 'var'  },
       { label: 'function()',   color: '#39d353', points: 20, css: 'fn'   },
       { label: 'for loop',     color: '#e3b341', points: 30, css: 'loop' },
+      { label: 'class{}',      color: '#bc8cff', points: 50, css: 'var'  },
     ],
-    BUG_COLORS:     ['#f85149', '#ff7b72', '#ffa198'],
-    PLATFORM_COLOR: '#21262d',
-    PLATFORM_EDGE:  '#39d353',
-    PLAYER_COLOR:   '#58a6ff',
-    BG_COLOR:       '#0d1117',
-    GRID_COLOR:     'rgba(48,54,61,0.35)',
-    // Poziomy: tokeny do zebrania, prędkość bugów, liczba platform
+
+    POWERUP_TYPES: [
+      { id: 'shield',    label: '🛡️',  color: '#bc8cff', duration: 5000,  desc: 'Tarcza! Brak utraty życia przez 5s' },
+      { id: 'rapidfire', label: '🔥',  color: '#ff7b35', duration: 5000,  desc: 'Rapid fire! Szybsze strzelanie przez 5s' },
+      { id: 'multishot', label: '💥',  color: '#f85149', duration: 4000,  desc: 'Multi-shot! 3 kule naraz przez 4s' },
+      { id: 'ammo',      label: '🔫',  color: '#39d353', duration: 0,     desc: '+10 amunicji!' },
+      { id: 'extralife', label: '❤️',  color: '#f85149', duration: 0,     desc: '+1 życie!' },
+      { id: 'magnet',    label: '🧲',  color: '#58a6ff', duration: 6000,  desc: 'Magnes! Tokeny przyciągane do ciebie przez 6s' },
+    ],
+
+    BUG_COLORS: ['#f85149', '#ff7b72', '#ffa198', '#ff6b35'],
+
+    // Mapy
+    MAPS: {
+      space: {
+        name: '🌌 Space',
+        bgColor: '#050a15',
+        gridColor: 'rgba(20,40,80,0.4)',
+        platformColor: '#0d2045',
+        platformEdge: '#58a6ff',
+        starfield: true,
+        parallaxSpeed: 0.3,
+      },
+      matrix: {
+        name: '💚 Matrix',
+        bgColor: '#001200',
+        gridColor: 'rgba(0,60,0,0.5)',
+        platformColor: '#001800',
+        platformEdge: '#39d353',
+        matrixRain: true,
+        parallaxSpeed: 0.2,
+      },
+      city: {
+        name: '🏙️ City',
+        bgColor: '#0a0a18',
+        gridColor: 'rgba(30,30,60,0.4)',
+        platformColor: '#1a1a30',
+        platformEdge: '#e3b341',
+        cityscape: true,
+        parallaxSpeed: 0.4,
+      },
+    },
+
     LEVELS: [
-      { tokensNeeded:  5, bugSpeed: 1.8, platformCount: 6 },
-      { tokensNeeded:  8, bugSpeed: 2.3, platformCount: 7 },
-      { tokensNeeded: 12, bugSpeed: 2.8, platformCount: 8 },
-      { tokensNeeded: 16, bugSpeed: 3.4, platformCount: 8 },
-      { tokensNeeded: 20, bugSpeed: 4.0, platformCount: 9 },
+      { tokensNeeded:  5, bugSpeed: 1.8, platformCount: 6,  bossAt: false },
+      { tokensNeeded:  8, bugSpeed: 2.3, platformCount: 7,  bossAt: false },
+      { tokensNeeded: 12, bugSpeed: 2.8, platformCount: 8,  bossAt: true  },
+      { tokensNeeded: 16, bugSpeed: 3.4, platformCount: 8,  bossAt: false },
+      { tokensNeeded: 20, bugSpeed: 4.0, platformCount: 9,  bossAt: true  },
+      { tokensNeeded: 25, bugSpeed: 4.8, platformCount: 10, bossAt: true  },
     ],
   };
 
   // ============================================================
-  // SEKCJA B – STAN GRY (sekcja 7 – logika rozgrywki)
+  // STAN GRY
   // ============================================================
-
-  /** GameState – obiekt przechowujący aktualny stan rozgrywki.
-   *  Mutowany przez funkcje update, reset i handleCollisions.
-   */
+  let selectedMap = 'space';
   let state = {
-    score:       0,
-    highScore:   Number(localStorage.getItem('coderunner_hs') || 0),
-    lives:       CONFIG.LIVES,
-    level:       0,          // indeks w tablicy CONFIG.LEVELS
-    tokensCollected: 0,      // zebrane tokeny na bieżącym poziomie
-    combo:       1,          // aktualny mnożnik combo
-    comboTimer:  null,       // setTimeout resetu combo
-    running:     false,      // czy gameloop jest aktywny
-    paused:      false,
-    invincible:  false,      // czy gracz jest nietykalny po uderzeniu
-    invTimer:    null,
-    frameCount:  0,
-    lastTime:    0,
-    fps:         60,
+    score: 0,
+    highScore: Number(localStorage.getItem('coderunner_hs2') || 0),
+    lives: CONFIG.LIVES,
+    level: 0,
+    tokensCollected: 0,
+    combo: 1, comboTimer: null,
+    running: false, paused: false,
+    invincible: false, invTimer: null,
+    frameCount: 0, lastTime: 0, fps: 60,
+    // Power-upy aktywne
+    shield: false, shieldTimer: null, shieldEnd: 0,
+    rapidfire: false, rapidTimer: null,
+    multishot: false, multishotTimer: null,
+    magnet: false, magnetTimer: null,
+    // Strzelanie
+    ammo: Infinity,
+    lastShot: 0,
+    // Mapa
+    mapKey: 'space',
+    // Boss
+    boss: null,
+    bossDefeated: false,
   };
 
   // ============================================================
-  // SEKCJA C – OBIEKTY GRY (sekcja 4 – obiekty)
+  // OBIEKTY GRY
   // ============================================================
-
-  /** player – obiekt reprezentujący postać gracza.
-   *  Zawiera: pozycję, prędkość, rozmiar i flagi stanu fizycznego.
-   */
-  let player = {};
-
-  /** platforms – tablica obiektów platform {x,y,w,h}.
-   *  Generowana przez buildLevel() dla każdego poziomu.
-   */
-  let platforms = [];
-
-  /** tokens – tablica zbieralnych tokenów.
-   *  Każdy token: {x,y,w,h,type,collected,bobOffset,bobSpeed}
-   */
-  let tokens = [];
-
-  /** bugs – tablica wrogich bugów.
-   *  Każdy bug: {x,y,w,h,vx,vy,onGround,color,legPhase}
-   */
-  let bugs = [];
-
-  /** particles – tablica efektów cząsteczkowych (wybuchy, iskry).
-   *  Każda cząstka: {x,y,vx,vy,life,maxLife,color,size}
-   */
-  let particles = [];
-
-  /** floatingTexts – tablica unoszących się napisów punktowych.
-   *  Każdy napis: {x,y,text,color,life,maxLife}
-   */
-  let floatingTexts = [];
-
-  // ============================================================
-  // SEKCJA D – KLAWIATURA (sekcja 2 – obsługa zdarzeń)
-  // ============================================================
-
-  /** keys – słownik aktualnie wciśniętych klawiszy.
-   *  Klucz: kod klawisza (KeyA, ArrowLeft…), wartość: boolean.
-   *  Modyfikowany przez handleKeyDown i handleKeyUp.
-   */
+  let player = {}, platforms = [], tokens = [], bugs = [], particles = [];
+  let floatingTexts = [], bullets = [], powerups = [];
+  let stars = [], matrixDrops = [], cityBuildings = [];
   const keys = {};
-
-  /** handleKeyDown – reaguje na wciśnięcie klawisza.
-   *  @param {KeyboardEvent} e – natywne zdarzenie przeglądarki
-   *  Wywołanie: event listener 'keydown' na document
-   *  Współpraca: keys{}, jumpPlayer(), togglePause()
-   */
-  function handleKeyDown(e) {
-    keys[e.code] = true;
-
-    // Skok (strzałka góra lub spacja) – tylko gdy gra aktywna
-    if ((e.code === 'ArrowUp' || e.code === 'Space') && state.running && !state.paused) {
-      jumpPlayer();
-      e.preventDefault(); // zapobiega przewijaniu strony przez Spację
-    }
-
-    // Pauza
-    if (e.code === 'KeyP' && state.running) {
-      togglePause();
-    }
-  }
-
-  /** handleKeyUp – zwalnia klawisz ze słownika keys.
-   *  @param {KeyboardEvent} e
-   *  Wywołanie: event listener 'keyup' na document
-   */
-  function handleKeyUp(e) {
-    keys[e.code] = false;
-  }
-
-  document.addEventListener('keydown', handleKeyDown);
-  document.addEventListener('keyup',   handleKeyUp);
+  let shootHeld = false;
 
   // ============================================================
-  // SEKCJA E – CANVAS I POMOCNICZE NARZĘDZIA RYSOWANIA
+  // CANVAS
   // ============================================================
-
   const canvas = document.getElementById('gameCanvas');
   const ctx    = canvas.getContext('2d');
 
-  /** drawRect – rysuje prostokąt z opcjonalnym zaokrągleniem.
-   *  @param {number} x, y  – lewy górny róg
-   *  @param {number} w, h  – szerokość, wysokość
-   *  @param {string} fill  – kolor wypełnienia
-   *  @param {number} [r=0] – promień zaokrąglenia rogów
-   *  Wywołanie: przez wszystkie funkcje draw*
-   */
+  // ============================================================
+  // POMOCNICZE
+  // ============================================================
   function drawRect(x, y, w, h, fill, r = 0) {
     ctx.fillStyle = fill;
     if (r > 0) {
-      ctx.beginPath();
-      ctx.roundRect(x, y, w, h, r);
-      ctx.fill();
+      ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill();
     } else {
       ctx.fillRect(x, y, w, h);
     }
   }
 
-  /** drawText – rysuje tekst z opcjonalnym cieniem.
-   *  @param {string} text
-   *  @param {number} x, y
-   *  @param {string} [color='#c9d1d9']
-   *  @param {string} [font='13px Share Tech Mono']
-   *  @param {string} [align='left']
-   *  @param {string} [shadowColor=null]
-   *  Wywołanie: drawHUD, drawTokens, drawFloatingTexts
-   */
-  function drawText(text, x, y, color = '#c9d1d9', font = '13px "Share Tech Mono"', align = 'left', shadowColor = null) {
-    ctx.font      = font;
-    ctx.fillStyle = color;
-    ctx.textAlign = align;
-    if (shadowColor) {
-      ctx.shadowColor = shadowColor;
-      ctx.shadowBlur  = 8;
-    }
+  function drawText(text, x, y, color='#c9d1d9', font='13px "Share Tech Mono"', align='left', shadow=null) {
+    ctx.font = font; ctx.fillStyle = color; ctx.textAlign = align;
+    if (shadow) { ctx.shadowColor = shadow; ctx.shadowBlur = 8; }
     ctx.fillText(text, x, y);
     ctx.shadowBlur = 0;
   }
 
-  // ============================================================
-  // SEKCJA F – BUDOWANIE POZIOMU (sekcja 7 – logika rozgrywki)
-  // ============================================================
-
-  /** buildLevel – generuje platformy, tokeny i bugi dla bieżącego poziomu.
-   *  Nie przyjmuje argumentów; korzysta ze state.level.
-   *  Wywołanie: startGame(), nextLevel()
-   *  Współpraca: platforms[], tokens[], bugs[], CONFIG.LEVELS
-   */
-  function buildLevel() {
-    const lvl = CONFIG.LEVELS[Math.min(state.level, CONFIG.LEVELS.length - 1)];
-
-    // --- Platformy ---
-    platforms = [];
-
-    // Podłoga (zawsze obecna)
-    platforms.push({ x: 0, y: 410, w: 800, h: 40 });
-
-    // Generowanie platform na różnych wysokościach
-    const slotW = 800 / lvl.platformCount;
-    for (let i = 0; i < lvl.platformCount; i++) {
-      const minY = 160, maxY = 360;
-      const y  = minY + Math.random() * (maxY - minY);
-      const w  = 80 + Math.random() * 80;
-      const x  = i * slotW + Math.random() * (slotW - w);
-      platforms.push({ x, y: Math.round(y), w: Math.round(w), h: 14 });
-    }
-
-    // --- Tokeny ---
-    tokens = [];
-    const tokenCount = lvl.tokensNeeded + 2; // trochę więcej niż wymagane
-    for (let i = 0; i < tokenCount; i++) {
-      const platIdx = 1 + Math.floor(Math.random() * (platforms.length - 1));
-      const plat    = platforms[platIdx];
-      const type    = CONFIG.TOKEN_TYPES[i % CONFIG.TOKEN_TYPES.length];
-      tokens.push({
-        x:         plat.x + Math.random() * Math.max(0, plat.w - 28),
-        y:         plat.y - 32,
-        w:         28,
-        h:         28,
-        type,
-        collected: false,
-        bobOffset: Math.random() * Math.PI * 2,
-        bobSpeed:  0.04 + Math.random() * 0.02,
-      });
-    }
-
-    // --- Bugi ---
-    bugs = [];
-    const bugCount = 2 + state.level;
-    for (let i = 0; i < bugCount; i++) {
-      const platIdx = 1 + Math.floor(Math.random() * (platforms.length - 1));
-      const plat    = platforms[platIdx];
-      const dir     = Math.random() < 0.5 ? 1 : -1;
-      bugs.push({
-        x:        plat.x + plat.w / 2 - 12,
-        y:        plat.y - 22,
-        w:        22,
-        h:        22,
-        vx:       lvl.bugSpeed * dir,
-        vy:       0,
-        onGround: false,
-        color:    CONFIG.BUG_COLORS[i % CONFIG.BUG_COLORS.length],
-        legPhase: 0,
-        platRef:  plat,  // bug chodzi po tej platformie
-      });
-    }
-  }
-
-  /** resetPlayer – ustawia gracza na pozycję startową.
-   *  Wywołanie: startGame(), po stracie życia (respawn)
-   */
-  function resetPlayer() {
-    player = {
-      x:        80,
-      y:        300,
-      w:        28,
-      h:        34,
-      vx:       0,
-      vy:       0,
-      onGround: false,
-      facingRight: true,
-      jumpCount:   0,   // do double-jump
-      blinkTimer:  0,   // miga podczas nietykalności
-    };
-  }
-
-  // ============================================================
-  // SEKCJA G – STEROWANIE POSTACIĄ (sekcja 6)
-  // ============================================================
-
-  /** jumpPlayer – wykonuje skok lub double-jump postaci.
-   *  Warunek: gracz musi być na podłożu LUB mieć nieużyty double-jump.
-   *  Wywołanie: handleKeyDown (klawiatura) + touchstart (dotyk)
-   *  Efekty: modyfikuje player.vy i player.jumpCount
-   */
-  function jumpPlayer() {
-    if (player.onGround) {
-      player.vy       = CONFIG.JUMP_FORCE;
-      player.onGround = false;
-      player.jumpCount = 1;
-      spawnParticles(player.x + player.w / 2, player.y + player.h, '#39d353', 4);
-    } else if (player.jumpCount < 2) {
-      // Double jump
-      player.vy       = CONFIG.JUMP_FORCE * 0.85;
-      player.jumpCount = 2;
-      spawnParticles(player.x + player.w / 2, player.y + player.h, '#58a6ff', 6);
-      showToast('Double jump! 🚀', 'ok');
-    }
-  }
-
-  /** updatePlayer – przetwarza ruch gracza w jednej klatce.
-   *  Odczytuje keys{}, stosuje grawitację, sprawdza kolizje z platformami.
-   *  @param {number} dt – delta time (ms, nie używane bezpośrednio – prędkości są per-frame)
-   *  Wywołanie: gameLoop()
-   *  Współpraca: keys{}, platforms[], checkPlayerPlatformCollision()
-   */
-  function updatePlayer(dt) {
-    // Ruch poziomy
-    if (keys['ArrowLeft']  || keys['KeyA']) {
-      player.vx -= 1.5;
-      player.facingRight = false;
-    }
-    if (keys['ArrowRight'] || keys['KeyD']) {
-      player.vx += 1.5;
-      player.facingRight = true;
-    }
-
-    // Tarcie (tłumienie prędkości poziomej)
-    player.vx *= CONFIG.FRICTION;
-
-    // Ograniczenie maksymalnej prędkości poziomej
-    player.vx = Math.max(-CONFIG.MOVE_SPEED, Math.min(CONFIG.MOVE_SPEED, player.vx));
-
-    // Grawitacja
-    player.vy += CONFIG.GRAVITY;
-
-    // Przesunięcie
-    player.x += player.vx;
-    player.y += player.vy;
-
-    // Ściany boczne (teleportacja z lewej do prawej)
-    if (player.x + player.w < 0)   player.x = canvas.width;
-    if (player.x > canvas.width)   player.x = -player.w;
-
-    // Sprawdzenie kolizji z platformami
-    player.onGround = false;
-    checkPlayerPlatformCollision();
-
-    // Wypadnięcie poza dolną krawędź ekranu = śmierć
-    if (player.y > canvas.height + 60) {
-      loseLife();
-    }
-
-    // Mignięcie podczas nietykalności
-    if (state.invincible) {
-      player.blinkTimer = (player.blinkTimer + 1) % 8;
-    } else {
-      player.blinkTimer = 0;
-    }
-  }
-
-  // ============================================================
-  // SEKCJA H – KOLIZJE (sekcja 8)
-  // ============================================================
-
-  /** rectsOverlap – sprawdza nakładanie się dwóch prostokątów (AABB).
-   *  @param {Object} a – {x,y,w,h}
-   *  @param {Object} b – {x,y,w,h}
-   *  @returns {boolean}
-   *  Wywołanie: checkPlayerPlatformCollision, checkTokenCollisions, checkBugCollisions
-   *  Jest to podstawowy algorytm detekcji kolizji w grze.
-   */
   function rectsOverlap(a, b) {
-    return a.x < b.x + b.w &&
-           a.x + a.w > b.x &&
-           a.y < b.y + b.h &&
-           a.y + a.h > b.y;
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   }
 
-  /** checkPlayerPlatformCollision – rozwiązuje kolizje gracza z platformami.
-   *  Wykrywa, z której strony nastąpiła kolizja i odpowiednio koryguje pozycję.
-   *  Wywołanie: updatePlayer() – raz na klatkę
-   *  Efekty: modyfikuje player.y, player.vy, player.onGround, player.jumpCount
-   */
-  function checkPlayerPlatformCollision() {
-    for (const plat of platforms) {
-      if (!rectsOverlap(player, plat)) continue;
-
-      // Oblicz głębokość wnikania z każdej strony
-      const fromTop    = (player.y + player.h) - plat.y;
-      const fromBottom = (plat.y + plat.h)     - player.y;
-      const fromLeft   = (player.x + player.w) - plat.x;
-      const fromRight  = (plat.x + plat.w)     - player.x;
-
-      const minDepth = Math.min(fromTop, fromBottom, fromLeft, fromRight);
-
-      if (minDepth === fromTop && player.vy >= 0) {
-        // Lądowanie na górze platformy
-        player.y        = plat.y - player.h;
-        player.vy       = 0;
-        player.onGround = true;
-        player.jumpCount = 0;
-      } else if (minDepth === fromBottom && player.vy < 0) {
-        // Uderzenie głową od dołu
-        player.y  = plat.y + plat.h;
-        player.vy = 1;
-      } else if (minDepth === fromLeft) {
-        player.x  = plat.x - player.w;
-        player.vx = 0;
-      } else if (minDepth === fromRight) {
-        player.x  = plat.x + plat.w;
-        player.vx = 0;
-      }
+  function spawnParticles(x, y, color, count, speed=2.5) {
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 / count) * i + Math.random() * 0.5;
+      const sp = speed * (0.6 + Math.random());
+      particles.push({
+        x, y, vx: Math.cos(angle)*sp, vy: Math.sin(angle)*sp - 1,
+        life: 20 + Math.floor(Math.random()*20), maxLife: 40,
+        color, size: 2 + Math.random() * 3,
+      });
     }
   }
 
-  /** checkTokenCollisions – sprawdza, czy gracz dotknął tokenu.
-   *  Zebrany token daje punkty z mnożnikiem combo i uruchamia efekty.
-   *  Wywołanie: gameLoop() – raz na klatkę
-   *  Efekty: token.collected = true, state.score, state.combo, cząstki, toast
-   */
-  function checkTokenCollisions() {
-    for (const token of tokens) {
-      if (token.collected) continue;
-      if (!rectsOverlap(player, token)) continue;
-
-      token.collected = true;
-      const earned = token.type.points * state.combo;
-      state.score += earned;
-      state.tokensCollected++;
-
-      // Resetowanie i aktualizacja combo
-      clearTimeout(state.comboTimer);
-      if (state.combo < 8) state.combo++;
-      state.comboTimer = setTimeout(() => { state.combo = 1; updateHUD(); }, CONFIG.COMBO_RESET_MS);
-
-      // Efekty wizualne
-      spawnParticles(token.x + token.w / 2, token.y + token.h / 2, token.type.color, 10);
-      spawnFloatingText(`+${earned}`, token.x + token.w / 2, token.y, token.type.color);
-
-      // Aktualizacja najlepszego wyniku
-      if (state.score > state.highScore) {
-        state.highScore = state.score;
-        localStorage.setItem('coderunner_hs', state.highScore);
-      }
-
-      updateHUD();
-
-      // Sprawdź warunek przejścia poziomu
-      const needed = CONFIG.LEVELS[Math.min(state.level, CONFIG.LEVELS.length - 1)].tokensNeeded;
-      if (state.tokensCollected >= needed) {
-        setTimeout(nextLevel, 400);
-      }
-    }
+  function spawnFloatingText(text, x, y, color) {
+    floatingTexts.push({ x, y, text, color, life: 55, maxLife: 55 });
   }
 
-  /** checkBugCollisions – sprawdza kontakt gracza z bugami.
-   *  Ignoruje kolizję, gdy gracz jest nietykalny.
-   *  Wywołanie: gameLoop() – raz na klatkę
-   *  Efekty: loseLife() lub nic
-   */
-  function checkBugCollisions() {
-    if (state.invincible) return;
-    for (const bug of bugs) {
-      if (rectsOverlap(player, bug)) {
-        loseLife();
-        return; // obsłuż tylko jeden bug na raz
-      }
-    }
+  function showToast(msg, type='ok') {
+    const cont = document.getElementById('toastContainer');
+    const el   = document.createElement('div');
+    el.className = 'toast' + (type==='warn'?' warn':type==='err'?' err':type==='purple'?' purple':'');
+    el.textContent = msg;
+    cont.appendChild(el);
+    setTimeout(() => el.remove(), 2100);
   }
 
   // ============================================================
-  // SEKCJA I – MECHANIKA GRY (sekcja 5)
+  // INICJALIZACJA MAPY
   // ============================================================
+  function initMapEffects() {
+    const map = CONFIG.MAPS[state.mapKey];
+    stars = [];
+    matrixDrops = [];
+    cityBuildings = [];
 
-  /** updateBugs – przesuwa bugi, odwraca kierunek przy krawędzi platformy.
-   *  Każdy bug porusza się po swojej platformie wahadłowo.
-   *  @param {number} dt – delta time (nieużywane bezpośrednio)
-   *  Wywołanie: gameLoop() – raz na klatkę
-   */
-  function updateBugs(dt) {
-    for (const bug of bugs) {
-      bug.x += bug.vx;
-      bug.legPhase += Math.abs(bug.vx) * 0.15;
-
-      // Odwrócenie przy krawędziach platformy patronackiej
-      const plat = bug.platRef;
-      if (bug.x < plat.x || bug.x + bug.w > plat.x + plat.w) {
-        bug.vx *= -1;
-        bug.x  = Math.max(plat.x, Math.min(plat.x + plat.w - bug.w, bug.x));
+    if (map.starfield) {
+      for (let i = 0; i < 120; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: Math.random() * 1.5 + 0.3,
+          speed: Math.random() * 0.4 + 0.1,
+          alpha: Math.random() * 0.7 + 0.3,
+        });
       }
+    }
 
-      // Grawitacja buga
-      bug.vy       += CONFIG.GRAVITY;
-      bug.y        += bug.vy;
-      bug.onGround  = false;
+    if (map.matrixRain) {
+      for (let i = 0; i < 30; i++) {
+        matrixDrops.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          speed: 2 + Math.random() * 3,
+          chars: Array.from({length: 8+Math.floor(Math.random()*12)}, () =>
+            String.fromCharCode(0x30A0 + Math.floor(Math.random()*96))),
+          alpha: 0.1 + Math.random() * 0.3,
+          len: 8 + Math.floor(Math.random()*12),
+        });
+      }
+    }
 
-      // Kolizja buga z platformami
-      for (const p of platforms) {
-        if (!rectsOverlap(bug, p)) continue;
-        const fromTop = (bug.y + bug.h) - p.y;
-        if (fromTop > 0 && fromTop < 20 && bug.vy >= 0) {
-          bug.y        = p.y - bug.h;
-          bug.vy       = 0;
-          bug.onGround = true;
+    if (map.cityscape) {
+      for (let bx = 0; bx < canvas.width + 100; bx += 50 + Math.random()*40) {
+        const bh = 60 + Math.random() * 140;
+        cityBuildings.push({
+          x: bx, w: 40 + Math.random()*30,
+          h: bh, y: canvas.height - bh,
+          windows: [],
+        });
+        // Okna w budynku
+        const lastB = cityBuildings[cityBuildings.length-1];
+        for (let wy = lastB.y + 10; wy < canvas.height - 15; wy += 18) {
+          for (let wx = lastB.x + 6; wx < lastB.x + lastB.w - 10; wx += 14) {
+            if (Math.random() > 0.35) {
+              lastB.windows.push({ x: wx, y: wy, lit: Math.random() > 0.5 });
+            }
+          }
         }
       }
     }
   }
 
-  /** updateParticles – przesuwa i starzeje cząstki efektów wizualnych.
-   *  Cząstki z zerowym life są usuwane z tablicy.
-   *  Wywołanie: gameLoop() – raz na klatkę
-   */
-  function updateParticles() {
-    for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i];
-      p.x  += p.vx;
-      p.y  += p.vy;
-      p.vy += 0.2; // grawitacja cząstek
-      p.life--;
-      if (p.life <= 0) particles.splice(i, 1);
-    }
-  }
+  // ============================================================
+  // BUDOWANIE POZIOMU
+  // ============================================================
+  function buildLevel() {
+    const lvl = CONFIG.LEVELS[Math.min(state.level, CONFIG.LEVELS.length - 1)];
+    platforms = [];
+    // Podłoga
+    platforms.push({ x: 0, y: 410, w: 800, h: 40 });
 
-  /** updateFloatingTexts – animuje unoszące się napisy punktowe.
-   *  Wywołanie: gameLoop() – raz na klatkę
-   */
-  function updateFloatingTexts() {
-    for (let i = floatingTexts.length - 1; i >= 0; i--) {
-      const ft = floatingTexts[i];
-      ft.y   -= 1.2;
-      ft.life--;
-      if (ft.life <= 0) floatingTexts.splice(i, 1);
+    const slotW = 800 / lvl.platformCount;
+    for (let i = 0; i < lvl.platformCount; i++) {
+      const y = 150 + Math.random() * 210;
+      const w = 70 + Math.random() * 90;
+      const x = i * slotW + Math.random() * (slotW - w);
+      platforms.push({ x, y: Math.round(y), w: Math.round(w), h: 14 });
     }
-  }
 
-  /** spawnParticles – tworzy eksplozję cząstek w podanym punkcie.
-   *  @param {number} x, y   – punkt emisji
-   *  @param {string} color  – kolor cząstek
-   *  @param {number} count  – liczba cząstek
-   *  Wywołanie: checkTokenCollisions, jumpPlayer, loseLife
-   */
-  function spawnParticles(x, y, color, count) {
-    for (let i = 0; i < count; i++) {
-      const angle = (Math.PI * 2 / count) * i + Math.random() * 0.5;
-      const speed = 1.5 + Math.random() * 2.5;
-      particles.push({
-        x, y,
-        vx:      Math.cos(angle) * speed,
-        vy:      Math.sin(angle) * speed - 1,
-        life:    20 + Math.floor(Math.random() * 20),
-        maxLife: 40,
-        color,
-        size:    2 + Math.random() * 3,
+    // Tokeny
+    tokens = [];
+    const tokenCount = lvl.tokensNeeded + 3;
+    for (let i = 0; i < tokenCount; i++) {
+      const pi = 1 + Math.floor(Math.random() * (platforms.length - 1));
+      const pl = platforms[pi];
+      const type = CONFIG.TOKEN_TYPES[i % CONFIG.TOKEN_TYPES.length];
+      tokens.push({
+        x: pl.x + Math.random() * Math.max(0, pl.w - 30),
+        y: pl.y - 34, w: 28, h: 28, type,
+        collected: false,
+        bobOffset: Math.random() * Math.PI * 2,
+        bobSpeed: 0.04 + Math.random() * 0.02,
       });
     }
+
+    // Bugi
+    bugs = [];
+    const bugCount = 2 + state.level;
+    for (let i = 0; i < bugCount; i++) {
+      const pi = 1 + Math.floor(Math.random() * (platforms.length - 1));
+      const pl = platforms[pi];
+      const dir = Math.random() < 0.5 ? 1 : -1;
+      bugs.push({
+        x: pl.x + pl.w/2 - 11, y: pl.y - 22,
+        w: 22, h: 22,
+        vx: lvl.bugSpeed * dir, vy: 0, onGround: false,
+        color: CONFIG.BUG_COLORS[i % CONFIG.BUG_COLORS.length],
+        legPhase: 0, platRef: pl,
+        hp: 1, maxHp: 1,
+        type: 'normal',
+      });
+    }
+
+    // Power-upy (1-2 na poziom)
+    powerups = [];
+    const puCount = 1 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < puCount; i++) {
+      const pi = 1 + Math.floor(Math.random() * (platforms.length - 1));
+      const pl = platforms[pi];
+      const type = CONFIG.POWERUP_TYPES[Math.floor(Math.random() * CONFIG.POWERUP_TYPES.length)];
+      powerups.push({
+        x: pl.x + pl.w/2 - 14, y: pl.y - 38,
+        w: 28, h: 28, type,
+        collected: false,
+        bobOffset: Math.random() * Math.PI * 2,
+        bobSpeed: 0.035,
+        spin: 0,
+      });
+    }
+
+    // Boss co kilka poziomów
+    state.boss = null;
+    if (lvl.bossAt) {
+      spawnBoss();
+    }
+
+    bullets = [];
   }
 
-  /** spawnFloatingText – tworzy unoszący się napis punktowy.
-   *  @param {string} text
-   *  @param {number} x, y
-   *  @param {string} color
-   *  Wywołanie: checkTokenCollisions
-   */
-  function spawnFloatingText(text, x, y, color) {
-    floatingTexts.push({ x, y, text, color, life: 50, maxLife: 50 });
+  // ============================================================
+  // BOSS
+  // ============================================================
+  function spawnBoss() {
+    const lvl = CONFIG.LEVELS[Math.min(state.level, CONFIG.LEVELS.length - 1)];
+    const hp = 10 + state.level * 5;
+    state.boss = {
+      x: 600, y: 100, w: 60, h: 60,
+      vx: lvl.bugSpeed * 1.5, vy: 0,
+      hp, maxHp: hp,
+      color: '#f85149',
+      phase: 'patrol',  // patrol, charge, jump
+      phaseTimer: 0,
+      legPhase: 0,
+      fireTimer: 0,
+      fireCooldown: 90,
+      projectiles: [],
+    };
+    showToast('⚠️ BOSS POJAWIŁ SIĘ!', 'err');
   }
 
-  /** loseLife – odejmuje życie, aktywuje nietykalność i wznawia lub kończy grę.
-   *  Wywołanie: updatePlayer (wypadnięcie z ekranu), checkBugCollisions
-   *  Efekty: state.lives--, state.invincible, resetPlayer() lub endGame()
-   */
+  // ============================================================
+  // GRACZ
+  // ============================================================
+  function resetPlayer() {
+    player = {
+      x: 80, y: 300, w: 28, h: 34,
+      vx: 0, vy: 0,
+      onGround: false, facingRight: true,
+      jumpCount: 0, blinkTimer: 0,
+    };
+  }
+
+  function jumpPlayer() {
+    if (player.onGround) {
+      player.vy = CONFIG.JUMP_FORCE;
+      player.onGround = false;
+      player.jumpCount = 1;
+      spawnParticles(player.x + player.w/2, player.y + player.h, '#39d353', 4);
+    } else if (player.jumpCount < 2) {
+      player.vy = CONFIG.JUMP_FORCE * 0.85;
+      player.jumpCount = 2;
+      spawnParticles(player.x + player.w/2, player.y + player.h, '#58a6ff', 6);
+      showToast('Double jump! 🚀', 'ok');
+    }
+  }
+
+  // ============================================================
+  // STRZELANIE
+  // ============================================================
+  function shoot() {
+    const now = performance.now();
+    const cooldown = state.rapidfire ? CONFIG.BULLET_COOLDOWN / 3 : CONFIG.BULLET_COOLDOWN;
+    if (now - state.lastShot < cooldown) return;
+    if (state.ammo !== Infinity && state.ammo <= 0) {
+      showToast('Brak amunicji! 🔫', 'warn');
+      return;
+    }
+    state.lastShot = now;
+
+    const bx = player.facingRight ? player.x + player.w : player.x;
+    const by = player.y + player.h / 2;
+    const dir = player.facingRight ? 1 : -1;
+
+    const bulletsToFire = state.multishot ? [0, -0.2, 0.2] : [0];
+    for (const angle of bulletsToFire) {
+      bullets.push({
+        x: bx, y: by, w: 8, h: 4,
+        vx: dir * CONFIG.BULLET_SPEED * Math.cos(angle),
+        vy: Math.sin(angle) * CONFIG.BULLET_SPEED,
+        life: 60,
+        color: state.multishot ? '#f85149' : '#e3b341',
+        dir,
+      });
+    }
+
+    if (state.ammo !== Infinity) {
+      state.ammo--;
+      updateHUD();
+    }
+
+    // Efekt strzału
+    spawnParticles(bx, by, '#e3b341', 3, 3);
+  }
+
+  // ============================================================
+  // AKTUALIZACJA GRACZA
+  // ============================================================
+  function updatePlayer(dt) {
+    if (keys['ArrowLeft']  || keys['KeyA']) { player.vx -= 1.5; player.facingRight = false; }
+    if (keys['ArrowRight'] || keys['KeyD']) { player.vx += 1.5; player.facingRight = true; }
+
+    player.vx *= CONFIG.FRICTION;
+    player.vx = Math.max(-CONFIG.MOVE_SPEED, Math.min(CONFIG.MOVE_SPEED, player.vx));
+    player.vy += CONFIG.GRAVITY;
+    player.x += player.vx;
+    player.y += player.vy;
+
+    if (player.x + player.w < 0)  player.x = canvas.width;
+    if (player.x > canvas.width)  player.x = -player.w;
+
+    player.onGround = false;
+    checkPlayerPlatformCollision();
+
+    if (player.y > canvas.height + 60) loseLife();
+
+    if (state.invincible) player.blinkTimer = (player.blinkTimer + 1) % 8;
+    else player.blinkTimer = 0;
+
+    // Magnes – przyciągaj tokeny
+    if (state.magnet) {
+      for (const tok of tokens) {
+        if (tok.collected) continue;
+        const dx = (player.x + player.w/2) - (tok.x + tok.w/2);
+        const dy = (player.y + player.h/2) - (tok.y + tok.h/2);
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 150) {
+          tok.x += dx * 0.07;
+          tok.y += dy * 0.07;
+        }
+      }
+    }
+  }
+
+  // ============================================================
+  // KOLIZJE – PLATFORMY
+  // ============================================================
+  function checkPlayerPlatformCollision() {
+    for (const plat of platforms) {
+      if (!rectsOverlap(player, plat)) continue;
+      const fromTop    = (player.y + player.h) - plat.y;
+      const fromBottom = (plat.y + plat.h)     - player.y;
+      const fromLeft   = (player.x + player.w) - plat.x;
+      const fromRight  = (plat.x + plat.w)     - player.x;
+      const minD = Math.min(fromTop, fromBottom, fromLeft, fromRight);
+      if (minD === fromTop && player.vy >= 0) {
+        player.y = plat.y - player.h; player.vy = 0;
+        player.onGround = true; player.jumpCount = 0;
+      } else if (minD === fromBottom && player.vy < 0) {
+        player.y = plat.y + plat.h; player.vy = 1;
+      } else if (minD === fromLeft) {
+        player.x = plat.x - player.w; player.vx = 0;
+      } else if (minD === fromRight) {
+        player.x = plat.x + plat.w; player.vx = 0;
+      }
+    }
+  }
+
+  // ============================================================
+  // KOLIZJE – TOKENY
+  // ============================================================
+  function checkTokenCollisions() {
+    for (const token of tokens) {
+      if (token.collected) continue;
+      if (!rectsOverlap(player, token)) continue;
+      token.collected = true;
+      const earned = token.type.points * state.combo;
+      state.score += earned;
+      state.tokensCollected++;
+      clearTimeout(state.comboTimer);
+      if (state.combo < 10) state.combo++;
+      state.comboTimer = setTimeout(() => { state.combo = 1; updateHUD(); }, CONFIG.COMBO_RESET_MS);
+      spawnParticles(token.x + token.w/2, token.y + token.h/2, token.type.color, 10);
+      spawnFloatingText(`+${earned}`, token.x + token.w/2, token.y, token.type.color);
+      if (state.score > state.highScore) {
+        state.highScore = state.score;
+        localStorage.setItem('coderunner_hs2', state.highScore);
+      }
+      updateHUD();
+      const needed = CONFIG.LEVELS[Math.min(state.level, CONFIG.LEVELS.length-1)].tokensNeeded;
+      if (state.tokensCollected >= needed && !state.boss) {
+        setTimeout(showLevelUp, 400);
+      }
+    }
+  }
+
+  // ============================================================
+  // KOLIZJE – BUGI Z GRACZEM
+  // ============================================================
+  function checkBugCollisions() {
+    if (state.invincible || state.shield) return;
+    for (const bug of bugs) {
+      if (rectsOverlap(player, bug)) { loseLife(); return; }
+    }
+    // Boss pociskami
+    if (state.boss) {
+      for (const proj of state.boss.projectiles) {
+        if (!state.invincible && !state.shield && rectsOverlap(player, proj)) {
+          loseLife(); return;
+        }
+      }
+    }
+    // Boss ciałem
+    if (state.boss && rectsOverlap(player, state.boss)) {
+      loseLife();
+    }
+  }
+
+  // ============================================================
+  // KOLIZJE – KULE Z BUGAMI
+  // ============================================================
+  function checkBulletCollisions() {
+    for (let bi = bullets.length - 1; bi >= 0; bi--) {
+      const bull = bullets[bi];
+      let hit = false;
+
+      // Trafianie bugów
+      for (let ei = bugs.length - 1; ei >= 0; ei--) {
+        if (rectsOverlap(bull, bugs[ei])) {
+          bugs[ei].hp--;
+          spawnParticles(bugs[ei].x + bugs[ei].w/2, bugs[ei].y + bugs[ei].h/2, bugs[ei].color, 8);
+          if (bugs[ei].hp <= 0) {
+            spawnFloatingText('+15', bugs[ei].x + bugs[ei].w/2, bugs[ei].y, '#f85149');
+            state.score += 15 * state.combo;
+            updateHUD();
+            bugs.splice(ei, 1);
+          }
+          hit = true;
+          break;
+        }
+      }
+
+      // Trafianie bossa
+      if (!hit && state.boss) {
+        if (rectsOverlap(bull, state.boss)) {
+          state.boss.hp--;
+          spawnParticles(state.boss.x + state.boss.w/2, state.boss.y + state.boss.h/2, '#f85149', 6);
+          spawnFloatingText('HIT!', state.boss.x + state.boss.w/2, state.boss.y - 10, '#f85149');
+          hit = true;
+          if (state.boss.hp <= 0) {
+            defeatedBoss();
+          }
+        }
+      }
+
+      if (hit) { bullets.splice(bi, 1); continue; }
+      bull.x += bull.vx;
+      bull.y += bull.vy;
+      bull.life--;
+      if (bull.life <= 0 || bull.x < 0 || bull.x > canvas.width) {
+        bullets.splice(bi, 1);
+      }
+    }
+  }
+
+  function defeatedBoss() {
+    spawnParticles(state.boss.x + state.boss.w/2, state.boss.y + state.boss.h/2, '#f85149', 40, 5);
+    spawnFloatingText('BOSS POKONANY! +500', state.boss.x, state.boss.y - 20, '#e3b341');
+    state.score += 500;
+    state.boss = null;
+    showToast('🏆 Boss pokonany! +500 pkt', 'ok');
+    updateHUD();
+    // Sprawdź warunek levelu
+    const needed = CONFIG.LEVELS[Math.min(state.level, CONFIG.LEVELS.length-1)].tokensNeeded;
+    if (state.tokensCollected >= needed) {
+      setTimeout(showLevelUp, 800);
+    }
+  }
+
+  // ============================================================
+  // KOLIZJE – POWER-UPY
+  // ============================================================
+  function checkPowerupCollisions() {
+    for (const pu of powerups) {
+      if (pu.collected) continue;
+      if (!rectsOverlap(player, pu)) continue;
+      pu.collected = true;
+      activatePowerup(pu.type);
+      spawnParticles(pu.x + pu.w/2, pu.y + pu.h/2, pu.type.color, 14);
+    }
+  }
+
+  function activatePowerup(type) {
+    showToast(type.desc, 'purple');
+    spawnFloatingText(type.label + ' ' + type.desc.split('!')[0] + '!',
+      player.x + player.w/2, player.y - 20, type.color);
+
+    if (type.id === 'shield') {
+      state.shield = true;
+      state.shieldEnd = performance.now() + type.duration;
+      clearTimeout(state.shieldTimer);
+      state.shieldTimer = setTimeout(() => { state.shield = false; updateHUD(); }, type.duration);
+    } else if (type.id === 'rapidfire') {
+      state.rapidfire = true;
+      clearTimeout(state.rapidTimer);
+      state.rapidTimer = setTimeout(() => { state.rapidfire = false; }, type.duration);
+    } else if (type.id === 'multishot') {
+      state.multishot = true;
+      clearTimeout(state.multishotTimer);
+      state.multishotTimer = setTimeout(() => { state.multishot = false; }, type.duration);
+    } else if (type.id === 'ammo') {
+      if (state.ammo !== Infinity) state.ammo = Math.min(state.ammo + 10, 99);
+    } else if (type.id === 'extralife') {
+      state.lives = Math.min(state.lives + 1, 6);
+      updateHUD();
+    } else if (type.id === 'magnet') {
+      state.magnet = true;
+      clearTimeout(state.magnetTimer);
+      state.magnetTimer = setTimeout(() => { state.magnet = false; }, type.duration);
+    }
+  }
+
+  // ============================================================
+  // AKTUALIZACJA BUGÓW
+  // ============================================================
+  function updateBugs(dt) {
+    for (const bug of bugs) {
+      bug.x += bug.vx;
+      bug.legPhase += Math.abs(bug.vx) * 0.15;
+      const plat = bug.platRef;
+      if (bug.x < plat.x || bug.x + bug.w > plat.x + plat.w) {
+        bug.vx *= -1;
+        bug.x = Math.max(plat.x, Math.min(plat.x + plat.w - bug.w, bug.x));
+      }
+      bug.vy += CONFIG.GRAVITY;
+      bug.y += bug.vy;
+      bug.onGround = false;
+      for (const p of platforms) {
+        if (!rectsOverlap(bug, p)) continue;
+        const ft = (bug.y + bug.h) - p.y;
+        if (ft > 0 && ft < 20 && bug.vy >= 0) {
+          bug.y = p.y - bug.h; bug.vy = 0; bug.onGround = true;
+        }
+      }
+    }
+  }
+
+  // ============================================================
+  // AKTUALIZACJA BOSSA
+  // ============================================================
+  function updateBoss(dt) {
+    if (!state.boss) return;
+    const boss = state.boss;
+    boss.legPhase += 0.1;
+    boss.phaseTimer++;
+    boss.fireTimer++;
+
+    // Ruch
+    boss.x += boss.vx;
+    boss.vy += CONFIG.GRAVITY;
+    boss.y += boss.vy;
+
+    // Kolizja z podłogą
+    const floor = platforms[0];
+    if (boss.y + boss.h > floor.y) {
+      boss.y = floor.y - boss.h;
+      boss.vy = 0;
+    }
+
+    // Zmiana kierunku przy krawędziach
+    if (boss.x < 0 || boss.x + boss.w > canvas.width) boss.vx *= -1;
+
+    // Fazy bossa
+    if (boss.phaseTimer > 180) {
+      boss.phaseTimer = 0;
+      const phases = ['patrol', 'charge', 'jump'];
+      boss.phase = phases[Math.floor(Math.random() * phases.length)];
+      if (boss.phase === 'charge') {
+        const dir = player.x > boss.x ? 1 : -1;
+        boss.vx = dir * 6;
+      } else if (boss.phase === 'jump') {
+        boss.vy = -15;
+        boss.vx = (player.x - boss.x) / 40;
+      } else {
+        const lvl = CONFIG.LEVELS[Math.min(state.level, CONFIG.LEVELS.length-1)];
+        boss.vx = lvl.bugSpeed * 2 * (boss.vx > 0 ? 1 : -1);
+      }
+    }
+
+    // Strzały bossa
+    if (boss.fireTimer > boss.fireCooldown) {
+      boss.fireTimer = 0;
+      boss.fireCooldown = 60 + Math.random() * 60;
+      const dx = player.x - boss.x;
+      const dy = player.y - boss.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      boss.projectiles.push({
+        x: boss.x + boss.w/2, y: boss.y + boss.h/2,
+        w: 10, h: 10,
+        vx: (dx/dist) * 4,
+        vy: (dy/dist) * 4,
+        life: 80,
+        color: '#ff4444',
+      });
+    }
+
+    // Aktualizuj pociski bossa
+    for (let i = boss.projectiles.length - 1; i >= 0; i--) {
+      const p = boss.projectiles[i];
+      p.x += p.vx; p.y += p.vy;
+      p.life--;
+      if (p.life <= 0 || p.x < 0 || p.x > canvas.width || p.y > canvas.height) {
+        boss.projectiles.splice(i, 1);
+      }
+    }
+  }
+
+  // ============================================================
+  // UTRATA ŻYCIA
+  // ============================================================
   function loseLife() {
     state.lives--;
     state.combo = 1;
     updateHUD();
-    spawnParticles(player.x + player.w / 2, player.y + player.h / 2, '#f85149', 16);
-
-    if (state.lives <= 0) {
-      endGame();
-      return;
-    }
-
+    spawnParticles(player.x + player.w/2, player.y + player.h/2, '#f85149', 16);
+    if (state.lives <= 0) { endGame(); return; }
     showToast('Stracono życie! 💔', 'err');
-
-    // Aktywacja nietykalności
     state.invincible = true;
     clearTimeout(state.invTimer);
-    state.invTimer = setTimeout(() => {
-      state.invincible = false;
-    }, CONFIG.INVINCIBLE_MS);
-
+    state.invTimer = setTimeout(() => { state.invincible = false; }, CONFIG.INVINCIBLE_MS);
     resetPlayer();
   }
 
-  /** nextLevel – przechodzi do kolejnego poziomu lub pętli końcowej.
-   *  Wywołanie: checkTokenCollisions() po zebraniu wymaganej liczby tokenów
-   *  Efekty: state.level++, buildLevel(), resetPlayer()
-   */
+  // ============================================================
+  // PRZEJŚCIE POZIOMU
+  // ============================================================
+  function showLevelUp() {
+    state.paused = true;
+    document.getElementById('levelScreen').classList.remove('hidden');
+    document.getElementById('levelUpMsg').textContent = `POZIOM ${state.level + 2}`;
+    const maps = Object.keys(CONFIG.MAPS);
+    const nextMap = maps[(state.level + 1) % maps.length];
+    document.getElementById('levelUpDesc').textContent =
+      `Następna mapa: ${CONFIG.MAPS[nextMap].name} • Bugi szybsze!`;
+  }
+
   function nextLevel() {
     state.level++;
     state.tokensCollected = 0;
-    showToast(`Poziom ${state.level + 1}! ⚡`, 'ok');
+    state.paused = false;
+    // Zmień mapę co poziom
+    const maps = Object.keys(CONFIG.MAPS);
+    state.mapKey = maps[state.level % maps.length];
+    document.getElementById('map-badge').textContent = CONFIG.MAPS[state.mapKey].name;
+    initMapEffects();
     buildLevel();
     resetPlayer();
     updateHUD();
+    document.getElementById('levelScreen').classList.add('hidden');
+    state.lastTime = performance.now();
+    requestAnimationFrame(gameLoop);
   }
 
   // ============================================================
-  // SEKCJA J – RYSOWANIE SCENY GRY (sekcja 3)
+  // AKTUALIZACJA EFEKTÓW TŁA
   // ============================================================
+  function updateMapEffects() {
+    const map = CONFIG.MAPS[state.mapKey];
+    if (map.starfield) {
+      for (const s of stars) {
+        s.x -= s.speed;
+        if (s.x < 0) { s.x = canvas.width; s.y = Math.random() * canvas.height; }
+      }
+    }
+    if (map.matrixRain) {
+      for (const drop of matrixDrops) {
+        drop.y += drop.speed;
+        if (drop.y > canvas.height + 100) {
+          drop.y = -100;
+          drop.x = Math.random() * canvas.width;
+          drop.chars = Array.from({length: drop.len}, () =>
+            String.fromCharCode(0x30A0 + Math.floor(Math.random()*96)));
+        }
+      }
+    }
+  }
 
-  /** drawBackground – rysuje tło z siatką przypominającą terminal.
-   *  Wywołanie: drawScene() – raz na klatkę
-   */
+  // ============================================================
+  // RYSOWANIE TŁA
+  // ============================================================
   function drawBackground() {
-    // Solidne tło
-    drawRect(0, 0, canvas.width, canvas.height, CONFIG.BG_COLOR);
+    const map = CONFIG.MAPS[state.mapKey];
+    drawRect(0, 0, canvas.width, canvas.height, map.bgColor);
 
-    // Siatka (grid) – efekt terminala / kodu
-    ctx.strokeStyle = CONFIG.GRID_COLOR;
-    ctx.lineWidth   = 0.5;
+    ctx.strokeStyle = map.gridColor;
+    ctx.lineWidth = 0.5;
     const step = 32;
     for (let x = 0; x < canvas.width; x += step) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x, canvas.height); ctx.stroke();
     }
     for (let y = 0; y < canvas.height; y += step) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width, y); ctx.stroke();
     }
 
-    // Dekoracyjne etykiety osi – nawiązanie do IDE / debuggera
-    ctx.font      = '9px "Share Tech Mono"';
-    ctx.fillStyle = 'rgba(48,54,61,0.7)';
+    // Etykiety osi
+    ctx.font = '9px "Share Tech Mono"';
+    ctx.fillStyle = map.gridColor;
     ctx.textAlign = 'left';
-    for (let y = step; y < canvas.height; y += step * 2) {
-      ctx.fillText(`${Math.round(y)}`, 2, y - 2);
+    for (let y = step; y < canvas.height; y += step*2) ctx.fillText(`${y}`, 2, y-2);
+
+    if (map.starfield) {
+      for (const s of stars) {
+        ctx.globalAlpha = s.alpha;
+        ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    if (map.matrixRain) {
+      ctx.font = '10px "Share Tech Mono"';
+      for (const drop of matrixDrops) {
+        for (let i = 0; i < drop.chars.length; i++) {
+          const a = (i === drop.chars.length-1) ? drop.alpha * 3 : drop.alpha * (i / drop.chars.length);
+          ctx.globalAlpha = Math.min(a, 1);
+          ctx.fillStyle = i === drop.chars.length-1 ? '#aaffaa' : '#00cc00';
+          ctx.fillText(drop.chars[i], drop.x, drop.y - i * 12);
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    if (map.cityscape) {
+      for (const b of cityBuildings) {
+        ctx.globalAlpha = 0.6;
+        drawRect(b.x, b.y, b.w, b.h, '#12121e');
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = '#e3b34144';
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(b.x, b.y, b.w, b.h);
+        for (const win of b.windows) {
+          ctx.globalAlpha = win.lit ? 0.7 : 0.1;
+          ctx.fillStyle = win.lit ? '#e3b341' : '#334';
+          ctx.fillRect(win.x, win.y, 6, 8);
+        }
+        ctx.globalAlpha = 1;
+      }
     }
   }
 
-  /** drawPlatforms – rysuje platformy z krawędzią w kolorze neonowego zielonego.
-   *  Wywołanie: drawScene()
-   */
   function drawPlatforms() {
+    const map = CONFIG.MAPS[state.mapKey];
     for (const p of platforms) {
-      // Ciało platformy
-      drawRect(p.x, p.y, p.w, p.h, CONFIG.PLATFORM_COLOR, 2);
-      // Górna krawędź – sygnalizuje, że można stanąć
-      drawRect(p.x, p.y, p.w, 2, CONFIG.PLATFORM_EDGE);
+      drawRect(p.x, p.y, p.w, p.h, map.platformColor, 2);
+      drawRect(p.x, p.y, p.w, 2, map.platformEdge);
     }
   }
 
-  /** drawTokens – rysuje animowane tokeny kodu.
-   *  Efekt bobbing (unoszenia) za pomocą sinusoidy.
-   *  Wywołanie: drawScene()
-   */
   function drawTokens() {
-    const t = state.frameCount;
     for (const tok of tokens) {
       if (tok.collected) continue;
       tok.bobOffset += tok.bobSpeed;
       const bobY = Math.sin(tok.bobOffset) * 4;
-
       const x = tok.x, y = tok.y + bobY;
-
-      // Poświata pod tokenem
       ctx.shadowColor = tok.type.color;
-      ctx.shadowBlur  = 12;
+      ctx.shadowBlur = 12;
       drawRect(x, y, tok.w, tok.h, tok.type.color + '22', 6);
-      ctx.shadowBlur  = 0;
-
-      // Obramowanie tokenu
+      ctx.shadowBlur = 0;
       ctx.strokeStyle = tok.type.color;
-      ctx.lineWidth   = 1.5;
-      ctx.beginPath();
-      ctx.roundRect(x, y, tok.w, tok.h, 6);
-      ctx.stroke();
-
-      // Etykieta (pierwsze 3 znaki)
-      drawText(tok.type.label.slice(0, 3), x + tok.w / 2, y + tok.h / 2 + 5,
-               tok.type.color, 'bold 10px "Share Tech Mono"', 'center');
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.roundRect(x, y, tok.w, tok.h, 6); ctx.stroke();
+      drawText(tok.type.label.slice(0,3), x + tok.w/2, y + tok.h/2 + 5,
+               tok.type.color, 'bold 9px "Share Tech Mono"', 'center');
     }
   }
 
-  /** drawBugs – rysuje animowane bugi (pająki).
-   *  @param {number} t – aktualny frameCount (do animacji)
-   *  Wywołanie: drawScene()
-   */
+  function drawPowerups() {
+    for (const pu of powerups) {
+      if (pu.collected) continue;
+      pu.bobOffset += pu.bobSpeed;
+      pu.spin += 0.04;
+      const bobY = Math.sin(pu.bobOffset) * 5;
+      const cx = pu.x + pu.w/2, cy = pu.y + pu.h/2 + bobY;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(pu.spin);
+      ctx.shadowColor = pu.type.color;
+      ctx.shadowBlur = 16;
+      ctx.fillStyle = pu.type.color + '33';
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI*2/6)*i - Math.PI/2;
+        i === 0 ? ctx.moveTo(Math.cos(a)*14, Math.sin(a)*14) :
+                  ctx.lineTo(Math.cos(a)*14, Math.sin(a)*14);
+      }
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = pu.type.color; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.restore();
+
+      drawText(pu.type.label, cx, cy + bobY + 6, pu.type.color, '16px serif', 'center');
+    }
+  }
+
   function drawBugs(t) {
     for (const bug of bugs) {
-      const cx = bug.x + bug.w / 2;
-      const cy = bug.y + bug.h / 2;
+      const cx = bug.x + bug.w/2, cy = bug.y + bug.h/2;
       const phase = bug.legPhase;
-
-      // Nóżki buga – 3 pary
-      ctx.strokeStyle = bug.color;
-      ctx.lineWidth   = 1.5;
+      ctx.strokeStyle = bug.color; ctx.lineWidth = 1.5;
       for (let i = -1; i <= 1; i++) {
-        const side    = i === 0 ? 1 : i;
-        const legSwing = Math.sin(phase + i) * 5;
-        // lewa strona
-        ctx.beginPath();
-        ctx.moveTo(cx - 4, cy + i * 4);
-        ctx.lineTo(cx - 12, cy + i * 4 + legSwing);
-        ctx.stroke();
-        // prawa strona
-        ctx.beginPath();
-        ctx.moveTo(cx + 4, cy + i * 4);
-        ctx.lineTo(cx + 12, cy + i * 4 - legSwing);
-        ctx.stroke();
+        const ls = Math.sin(phase + i) * 5;
+        ctx.beginPath(); ctx.moveTo(cx-4, cy+i*4); ctx.lineTo(cx-12, cy+i*4+ls); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx+4, cy+i*4); ctx.lineTo(cx+12, cy+i*4-ls); ctx.stroke();
       }
-
-      // Ciało buga – elipsa
       ctx.fillStyle = bug.color;
-      ctx.shadowColor = bug.color;
-      ctx.shadowBlur  = 8;
+      ctx.shadowColor = bug.color; ctx.shadowBlur = 8;
       ctx.beginPath();
-      ctx.ellipse(cx, cy, bug.w / 2 - 2, bug.h / 2 - 2, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-
-      // Oczy buga
+      ctx.ellipse(cx, cy, bug.w/2-2, bug.h/2-2, 0, 0, Math.PI*2);
+      ctx.fill(); ctx.shadowBlur = 0;
+      // Oczy
       ctx.fillStyle = '#0d1117';
-      const eyeX = bug.vx > 0 ? cx + 4 : cx - 4;
-      ctx.beginPath(); ctx.arc(eyeX - 2, cy - 2, 2, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(eyeX + 2, cy - 2, 2, 0, Math.PI * 2); ctx.fill();
-
-      // Etykieta "Bug"
-      drawText('bug', cx, bug.y - 4, bug.color, '9px "Share Tech Mono"', 'center');
+      const eyeX = bug.vx > 0 ? cx+4 : cx-4;
+      ctx.beginPath(); ctx.arc(eyeX-2, cy-2, 2, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(eyeX+2, cy-2, 2, 0, Math.PI*2); ctx.fill();
+      drawText('bug', cx, bug.y-4, bug.color, '8px "Share Tech Mono"', 'center');
     }
   }
 
-  /** drawPlayer – rysuje postać gracza (robot).
-   *  Miga podczas nietykalności (co 4 klatki).
-   *  Wywołanie: drawScene()
-   */
+  function drawBoss() {
+    if (!state.boss) return;
+    const boss = state.boss;
+    const cx = boss.x + boss.w/2, cy = boss.y + boss.h/2;
+
+    // Nogi (6 par jak spider boss)
+    ctx.strokeStyle = boss.color; ctx.lineWidth = 2;
+    for (let i = -2; i <= 2; i++) {
+      const ls = Math.sin(boss.legPhase + i*0.8) * 8;
+      ctx.beginPath(); ctx.moveTo(cx-10, cy+i*8); ctx.lineTo(cx-28, cy+i*8+ls); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx+10, cy+i*8); ctx.lineTo(cx+28, cy+i*8-ls); ctx.stroke();
+    }
+
+    // Ciało
+    ctx.fillStyle = boss.color;
+    ctx.shadowColor = boss.color; ctx.shadowBlur = 20;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, boss.w/2, boss.h/2, 0, 0, Math.PI*2);
+    ctx.fill(); ctx.shadowBlur = 0;
+
+    // Oczy bossa (większe i świecące)
+    ctx.fillStyle = '#ffff00';
+    ctx.shadowColor = '#ffff00'; ctx.shadowBlur = 10;
+    ctx.beginPath(); ctx.arc(cx-10, cy-8, 5, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx+10, cy-8, 5, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(cx-10, cy-8, 2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx+10, cy-8, 2, 0, Math.PI*2); ctx.fill();
+
+    // Etykieta BOSS
+    ctx.shadowColor = '#f85149'; ctx.shadowBlur = 12;
+    drawText('⚠ BOSS', cx, boss.y - 14, '#f85149', 'bold 11px "Share Tech Mono"', 'center');
+    ctx.shadowBlur = 0;
+
+    // Pasek HP bossa
+    const bw = boss.w + 30;
+    const bx2 = boss.x - 15;
+    const by2 = boss.y - 28;
+    drawRect(bx2, by2, bw, 6, '#333', 3);
+    drawRect(bx2, by2, bw * (boss.hp/boss.maxHp), 6, '#f85149', 3);
+
+    // Pociski bossa
+    for (const p of boss.projectiles) {
+      ctx.shadowColor = '#ff4444'; ctx.shadowBlur = 10;
+      ctx.fillStyle = '#ff4444';
+      ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  function drawBullets() {
+    for (const bull of bullets) {
+      ctx.shadowColor = bull.color; ctx.shadowBlur = 8;
+      ctx.fillStyle = bull.color;
+      ctx.beginPath();
+      ctx.ellipse(bull.x, bull.y, bull.w/2, bull.h/2, bull.dir > 0 ? 0 : Math.PI, 0, Math.PI*2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+  }
+
   function drawPlayer() {
-    // Miganie podczas nietykalności
     if (state.invincible && player.blinkTimer < 4) return;
 
     const x = Math.round(player.x), y = Math.round(player.y);
     const w = player.w, h = player.h;
 
-    // Nogi (animacja chodu)
+    // Tarcza
+    if (state.shield) {
+      ctx.strokeStyle = '#bc8cff';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#bc8cff'; ctx.shadowBlur = 15;
+      ctx.beginPath();
+      ctx.arc(x + w/2, y + h/2, 24, 0, Math.PI*2);
+      ctx.stroke(); ctx.shadowBlur = 0;
+    }
+
+    // Magnes aura
+    if (state.magnet) {
+      ctx.strokeStyle = '#58a6ff44';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(x + w/2, y + h/2, 150, 0, Math.PI*2);
+      ctx.stroke();
+    }
+
+    // Nogi
     const legAnim = player.onGround ? Math.sin(state.frameCount * 0.3) * 4 : 0;
-    ctx.fillStyle = '#1f6feb';
-    drawRect(x + 4,     y + h - 8,  8, 8 + legAnim, '#1f6feb', 2);
+    drawRect(x + 4,     y + h - 8, 8, 8 + legAnim, '#1f6feb', 2);
     drawRect(x + w - 12, y + h - 8, 8, 8 - legAnim, '#1f6feb', 2);
 
     // Tułów
-    ctx.shadowColor = CONFIG.PLAYER_COLOR;
-    ctx.shadowBlur  = 10;
-    drawRect(x, y + 8, w, h - 16, '#1f6feb', 4);
+    ctx.shadowColor = '#58a6ff';
+    ctx.shadowBlur = state.rapidfire ? 20 : 10;
+    drawRect(x, y + 8, w, h - 16, state.multishot ? '#ff7b35' : '#1f6feb', 4);
     ctx.shadowBlur = 0;
 
     // Głowa
-    drawRect(x + 4, y, w - 8, 18, CONFIG.PLAYER_COLOR, 4);
+    drawRect(x + 4, y, w - 8, 18, '#58a6ff', 4);
 
-    // Oczy – diody LED
+    // Oczy
     const eyeDir = player.facingRight ? 1 : -1;
     ctx.fillStyle = '#0d1117';
-    ctx.beginPath(); ctx.arc(x + w/2 + eyeDir * 4 - 2, y + 8, 2.5, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#39d353';
-    ctx.beginPath(); ctx.arc(x + w/2 + eyeDir * 4 - 2, y + 8, 1, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x + w/2 + eyeDir*4 - 2, y + 8, 2.5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = state.rapidfire ? '#ff7b35' : '#39d353';
+    ctx.beginPath(); ctx.arc(x + w/2 + eyeDir*4 - 2, y + 8, 1, 0, Math.PI*2); ctx.fill();
 
     // Antena
-    ctx.strokeStyle = CONFIG.PLAYER_COLOR;
-    ctx.lineWidth   = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(x + w/2, y);
-    ctx.lineTo(x + w/2, y - 6);
-    ctx.stroke();
-    ctx.fillStyle = '#39d353';
-    ctx.beginPath(); ctx.arc(x + w/2, y - 8, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#58a6ff'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x+w/2, y); ctx.lineTo(x+w/2, y-6); ctx.stroke();
+    ctx.fillStyle = state.magnet ? '#58a6ff' : '#39d353';
+    ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 6;
+    ctx.beginPath(); ctx.arc(x+w/2, y-8, 2, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
   }
 
-  /** drawParticles – rysuje cząstki efektów wizualnych.
-   *  Każda cząstka zanika (alpha maleje z upływem life).
-   *  Wywołanie: drawScene()
-   */
   function drawParticles() {
     for (const p of particles) {
-      const alpha = p.life / p.maxLife;
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle   = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.globalAlpha = p.life / p.maxLife;
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size * (p.life/p.maxLife), 0, Math.PI*2); ctx.fill();
     }
     ctx.globalAlpha = 1;
   }
 
-  /** drawFloatingTexts – rysuje unoszące się napisy punktowe nad tokenami.
-   *  Wywołanie: drawScene()
-   */
   function drawFloatingTexts() {
     for (const ft of floatingTexts) {
-      const alpha = ft.life / ft.maxLife;
-      ctx.globalAlpha = alpha;
-      drawText(ft.text, ft.x, ft.y, ft.color,
-               'bold 16px "Exo 2", sans-serif', 'center', ft.color);
+      ctx.globalAlpha = ft.life / ft.maxLife;
+      drawText(ft.text, ft.x, ft.y, ft.color, 'bold 14px "Exo 2", sans-serif', 'center', ft.color);
     }
     ctx.globalAlpha = 1;
   }
 
-  /** drawProgressBar – rysuje pasek postępu do następnego poziomu.
-   *  Wywołanie: drawScene()
-   */
   function drawProgressBar() {
-    const needed   = CONFIG.LEVELS[Math.min(state.level, CONFIG.LEVELS.length - 1)].tokensNeeded;
+    const needed = CONFIG.LEVELS[Math.min(state.level, CONFIG.LEVELS.length-1)].tokensNeeded;
     const progress = Math.min(state.tokensCollected / needed, 1);
-    const barW = 200, barH = 6;
+    const barW = 180, barH = 6;
     const bx = canvas.width - barW - 12, by = canvas.height - 20;
-
     drawRect(bx, by, barW, barH, '#21262d', 3);
-    if (progress > 0) {
-      drawRect(bx, by, barW * progress, barH, '#39d353', 3);
+    if (progress > 0) drawRect(bx, by, barW * progress, barH, '#39d353', 3);
+    drawText(`${state.tokensCollected}/${needed} tokenów`, bx + barW/2, by-4, '#6e7681', '10px "Share Tech Mono"', 'center');
+    // Boss HP wskaźnik
+    if (state.boss) {
+      drawText('⚠ BOSS', 12, canvas.height - 22, '#f85149', 'bold 11px "Share Tech Mono"', 'left');
+      drawRect(12, canvas.height - 16, 150, 6, '#333', 3);
+      drawRect(12, canvas.height - 16, 150 * (state.boss.hp/state.boss.maxHp), 6, '#f85149', 3);
     }
-    drawText(`${state.tokensCollected}/${needed} tokenów`,
-             bx + barW / 2, by - 4, '#6e7681', '10px "Share Tech Mono"', 'center');
   }
 
-  /** drawScene – główna funkcja rysująca całą scenę w kolejności warstw.
-   *  Wywołanie: gameLoop() – raz na klatkę
-   *  Kolejność (painter's algorithm): tło → platformy → tokeny → bugi → gracz → cząstki → teksty → pasek
-   */
   function drawScene() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBackground();
     drawPlatforms();
     drawTokens();
+    drawPowerups();
     drawBugs(state.frameCount);
+    drawBoss();
+    drawBullets();
     drawPlayer();
     drawParticles();
     drawFloatingTexts();
@@ -1175,68 +1412,45 @@
   }
 
   // ============================================================
-  // SEKCJA K – HUD (sekcja 1 – interfejs użytkownika)
+  // HUD
   // ============================================================
-
-  /** updateHUD – aktualizuje wszystkie elementy HTML HUD.
-   *  Wywołanie: po każdej zmianie punktów, żyć, combo lub poziomu.
-   *  Elementy: #scoreDisplay, #highScoreDisplay, #livesIcons, #level-badge, #combo-display
-   */
   function updateHUD() {
-    document.getElementById('scoreDisplay').textContent    = state.score;
+    document.getElementById('scoreDisplay').textContent = state.score;
     document.getElementById('highScoreDisplay').textContent = state.highScore;
-
-    // Ikony serc
-    const hearts = '❤️'.repeat(state.lives) + '🖤'.repeat(Math.max(0, CONFIG.LIVES - state.lives));
-    document.getElementById('livesIcons').innerHTML = hearts;
-
-    // Poziom
+    document.getElementById('livesIcons').innerHTML =
+      '❤️'.repeat(state.lives) + '🖤'.repeat(Math.max(0, CONFIG.LIVES - state.lives));
     document.getElementById('level-badge').textContent = `POZIOM ${state.level + 1}`;
-
-    // Combo
     const comboEl = document.getElementById('combo-display');
     comboEl.textContent = `COMBO x${state.combo}`;
     comboEl.style.opacity = state.combo > 1 ? '1' : '0.3';
+    const ammoEl = document.getElementById('ammo-display');
+    ammoEl.textContent = state.ammo === Infinity ? '🔫 ∞' : `🔫 ${state.ammo}`;
+    const shieldEl = document.getElementById('shield-display');
+    if (state.shield) {
+      const rem = Math.ceil((state.shieldEnd - performance.now()) / 1000);
+      shieldEl.textContent = `🛡️ ${rem}s`;
+      shieldEl.style.opacity = '1';
+    } else {
+      shieldEl.style.opacity = '0.3';
+    }
   }
 
   // ============================================================
-  // SEKCJA L – POWIADOMIENIA TOAST (sekcja 1 – UI)
+  // STEROWANIE GRĄ
   // ============================================================
-
-  /** showToast – wyświetla krótkie powiadomienie w rogu ekranu.
-   *  @param {string} msg          – treść powiadomienia
-   *  @param {'ok'|'warn'|'err'} type – typ (kolor)
-   *  Wywołanie: loseLife, nextLevel, jumpPlayer (double jump)
-   *  Element automatycznie znika po ~2s (animacja CSS).
-   */
-  function showToast(msg, type = 'ok') {
-    const cont  = document.getElementById('toastContainer');
-    const el    = document.createElement('div');
-    el.className = 'toast' + (type === 'warn' ? ' warn' : type === 'err' ? ' err' : '');
-    el.textContent = msg;
-    cont.appendChild(el);
-    setTimeout(() => el.remove(), 2100);
-  }
-
-  // ============================================================
-  // SEKCJA M – STEROWANIE GRĄ (start, stop, pauza)
-  // ============================================================
-
-  /** startGame – inicjalizuje nową rozgrywkę od zera.
-   *  Wywołanie: kliknięcie #startBtn lub #restartBtn
-   *  Efekty: resetuje state, buduje poziom, ukrywa ekrany, startuje pętlę
-   */
   function startGame() {
-    state.score          = 0;
-    state.lives          = CONFIG.LIVES;
-    state.level          = 0;
-    state.tokensCollected = 0;
-    state.combo          = 1;
-    state.running        = true;
-    state.paused         = false;
-    state.invincible     = false;
-    state.frameCount     = 0;
+    state.score = 0; state.lives = CONFIG.LIVES; state.level = 0;
+    state.tokensCollected = 0; state.combo = 1;
+    state.running = true; state.paused = false;
+    state.invincible = false; state.frameCount = 0;
+    state.shield = false; state.rapidfire = false;
+    state.multishot = false; state.magnet = false;
+    state.ammo = Infinity;
+    state.lastShot = 0;
+    state.mapKey = selectedMap;
+    document.getElementById('map-badge').textContent = CONFIG.MAPS[state.mapKey].name;
 
+    initMapEffects();
     buildLevel();
     resetPlayer();
     updateHUD();
@@ -1244,89 +1458,81 @@
     document.getElementById('startScreen').classList.add('hidden');
     document.getElementById('endScreen').classList.add('hidden');
     document.getElementById('pauseScreen').classList.add('hidden');
+    document.getElementById('levelScreen').classList.add('hidden');
 
     state.lastTime = performance.now();
     requestAnimationFrame(gameLoop);
   }
 
-  /** endGame – zatrzymuje rozgrywkę i wyświetla ekran końcowy.
-   *  Wywołanie: loseLife() gdy lives === 0
-   */
   function endGame() {
     state.running = false;
-    const endScreen   = document.getElementById('endScreen');
-    const allCollected = tokens.filter(t => t.collected).length;
-
-    document.getElementById('finalScore').textContent   = state.score;
+    document.getElementById('finalScore').textContent = state.score;
     document.getElementById('finalMessage').textContent =
-      `Zebrałeś ${allCollected} tokenów na poziomie ${state.level + 1}`;
-
+      `Poziom ${state.level + 1} • Zebrano ${state.tokensCollected} tokenów`;
     const hsNote = document.getElementById('highScoreNote');
-    if (state.score >= state.highScore && state.score > 0) {
-      hsNote.textContent = '🏆 Nowy rekord!';
-    } else {
-      hsNote.textContent = `Rekord: ${state.highScore} pkt`;
-    }
-
-    endScreen.classList.remove('hidden');
+    if (state.score >= state.highScore && state.score > 0) hsNote.textContent = '🏆 Nowy rekord!';
+    else hsNote.textContent = `Rekord: ${state.highScore} pkt`;
+    document.getElementById('endScreen').classList.remove('hidden');
   }
 
-  /** togglePause – przełącza stan pauzy.
-   *  Wywołanie: handleKeyDown (klawisz P), kliknięcie #resumeBtn
-   */
   function togglePause() {
     state.paused = !state.paused;
     document.getElementById('pauseScreen').classList.toggle('hidden', !state.paused);
-    if (!state.paused) {
-      state.lastTime = performance.now();
-      requestAnimationFrame(gameLoop);
-    }
+    if (!state.paused) { state.lastTime = performance.now(); requestAnimationFrame(gameLoop); }
   }
 
   // ============================================================
-  // SEKCJA N – GŁÓWNA PĘTLA GRY (sekcja 5 – mechanika)
+  // GŁÓWNA PĘTLA
   // ============================================================
-
-  /** gameLoop – serce gry; wywołuje update i draw co klatkę animacji.
-   *  @param {DOMHighResTimeStamp} timestamp – czas bieżącej klatki (z requestAnimationFrame)
-   *  Oblicza delta time (dt), mierzy FPS i deleguje do update/draw.
-   *  Wywołanie: requestAnimationFrame (rekurencyjnie)
-   *  Zatrzymuje się gdy state.running === false lub state.paused === true.
-   */
   function gameLoop(timestamp) {
     if (!state.running || state.paused) return;
-
-    const dt = Math.min(timestamp - state.lastTime, 50); // max 50ms (cap na lag)
+    const dt = Math.min(timestamp - state.lastTime, 50);
     state.lastTime = timestamp;
     state.frameCount++;
 
-    // Pomiar FPS (co 30 klatek)
     if (state.frameCount % 30 === 0) {
       state.fps = Math.round(1000 / Math.max(dt, 1));
       document.getElementById('fps-counter').textContent = `${state.fps} FPS`;
+      if (state.shield) updateHUD(); // odśwież licznik tarczy
     }
 
-    // --- UPDATE ---
+    updateMapEffects();
     updatePlayer(dt);
     updateBugs(dt);
+    updateBoss(dt);
     updateParticles();
-    updateFloatingTexts();
+    for (let i = floatingTexts.length-1; i>=0; i--) {
+      floatingTexts[i].y -= 1.2;
+      floatingTexts[i].life--;
+      if (floatingTexts[i].life <= 0) floatingTexts.splice(i,1);
+    }
 
-    // --- DETEKCJA KOLIZJI ---
     checkTokenCollisions();
     checkBugCollisions();
+    checkBulletCollisions();
+    checkPowerupCollisions();
 
-    // --- RYSOWANIE ---
     drawScene();
-
     requestAnimationFrame(gameLoop);
   }
 
   // ============================================================
-  // SEKCJA O – OBSŁUGA ZDARZEŃ UI (sekcja 2)
+  // ZDARZENIA
   // ============================================================
+  function handleKeyDown(e) {
+    keys[e.code] = true;
+    if ((e.code==='ArrowUp'||e.code==='Space') && state.running && !state.paused) {
+      jumpPlayer(); e.preventDefault();
+    }
+    if ((e.code==='KeyX'||e.code==='KeyZ') && state.running && !state.paused) {
+      shoot(); e.preventDefault();
+    }
+    if (e.code==='KeyP' && state.running) togglePause();
+  }
+  function handleKeyUp(e) { keys[e.code] = false; }
+  document.addEventListener('keydown', handleKeyDown);
+  document.addEventListener('keyup',   handleKeyUp);
 
-  // Przyciski ekranów
   document.getElementById('startBtn').addEventListener('click', startGame);
   document.getElementById('restartBtn').addEventListener('click', startGame);
   document.getElementById('menuBtn').addEventListener('click', () => {
@@ -1334,56 +1540,58 @@
     document.getElementById('startScreen').classList.remove('hidden');
   });
   document.getElementById('resumeBtn').addEventListener('click', togglePause);
+  document.getElementById('continueBtn').addEventListener('click', nextLevel);
 
-  // Kliknięcie na canvas = skok (obsługa myszy / dotyku)
-  canvas.addEventListener('click', () => {
-    if (state.running && !state.paused) jumpPlayer();
+  // Wybór mapy
+  document.querySelectorAll('.map-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.map-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedMap = btn.dataset.map;
+    });
   });
 
-  // Touch (mobile) – lewy/prawy dotyk = ruch, środek = skok
+  canvas.addEventListener('click', (e) => {
+    if (!state.running || state.paused) return;
+    const rect = canvas.getBoundingClientRect();
+    const tx = e.clientX - rect.left;
+    if (tx < canvas.width * 0.3) { keys['ArrowLeft']=true; setTimeout(()=>keys['ArrowLeft']=false,150); }
+    else if (tx > canvas.width * 0.7) shoot();
+    else jumpPlayer();
+  });
+
   canvas.addEventListener('touchstart', (e) => {
     e.preventDefault();
     if (!state.running || state.paused) return;
     const touch = e.touches[0];
-    const rect  = canvas.getBoundingClientRect();
-    const tx    = touch.clientX - rect.left;
+    const rect = canvas.getBoundingClientRect();
+    const tx = touch.clientX - rect.left;
     const third = canvas.width / 3;
-
-    if (tx < third) {
-      keys['ArrowLeft']  = true;
-      setTimeout(() => { keys['ArrowLeft'] = false; }, 150);
-    } else if (tx > third * 2) {
-      keys['ArrowRight'] = true;
-      setTimeout(() => { keys['ArrowRight'] = false; }, 150);
-    } else {
-      jumpPlayer();
-    }
+    if (tx < third) { keys['ArrowLeft']=true; setTimeout(()=>keys['ArrowLeft']=false,150); }
+    else if (tx > third*2) shoot();
+    else jumpPlayer();
   }, { passive: false });
 
   // ============================================================
-  // SEKCJA P – INICJALIZACJA
+  // INIT
   // ============================================================
-
-  // Wczytanie rekordu i wyświetlenie na ekranie startowym
   document.getElementById('highScoreDisplay').textContent = state.highScore;
-
-  // Pierwsza klatka – narysuj tło jeszcze przed startem gry
-  (function drawIdleScreen() {
+  (function drawIdle() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawRect(0, 0, canvas.width, canvas.height, CONFIG.BG_COLOR);
-    ctx.strokeStyle = CONFIG.GRID_COLOR;
-    ctx.lineWidth   = 0.5;
-    for (let x = 0; x < canvas.width; x += 32) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+    drawRect(0, 0, canvas.width, canvas.height, '#050a15');
+    // Gwiazdki na idle screen
+    for (let i = 0; i < 80; i++) {
+      const sx = Math.random() * canvas.width;
+      const sy = Math.random() * canvas.height;
+      const r  = Math.random() * 1.2 + 0.2;
+      ctx.globalAlpha = Math.random() * 0.7 + 0.3;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI*2); ctx.fill();
     }
-    for (let y = 0; y < canvas.height; y += 32) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-    }
-    drawText('Naciśnij "Rozpocznij grę" aby zagrać',
-             canvas.width / 2, canvas.height / 2,
-             '#6e7681', '14px "Share Tech Mono"', 'center');
+    ctx.globalAlpha = 1;
+    drawText('Wybierz mapę i naciśnij "Rozpocznij grę"',
+      canvas.width/2, canvas.height/2, '#6e7681', '14px "Share Tech Mono"', 'center');
   })();
-
   </script>
 </body>
 </html>
