@@ -813,6 +813,20 @@
     }
   }
 
+  /** updateParticles – przesuwa i starzeje cząstki efektów wizualnych.
+   *  Cząstki z zerowym life są usuwane z tablicy.
+   *  Wywołanie: gameLoop() – raz na klatkę
+   */
+  function updateParticles() {
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x  += p.vx;
+      p.y  += p.vy;
+      p.vy += 0.2; // grawitacja cząstek
+      p.life--;
+      if (p.life <= 0) particles.splice(i, 1);
+    }
+  }
   // ============================================================
   // KOLIZJE – BUGI Z GRACZEM
   // ============================================================
